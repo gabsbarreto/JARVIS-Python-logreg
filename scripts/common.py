@@ -32,7 +32,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parent
 DATA_DIR = PROJECT_ROOT / 'data'
-DATA_FILE = DATA_DIR / 'portionsize truncated.pkl'
+DATA_FILE = DATA_DIR / 'portionsize truncated.pkl.gz'
 STOPWORDS_FILE = DATA_DIR / 'smart.txt'
 
 # Match the current Hypertension k-fold preprocessing; adjust if needed.
@@ -411,7 +411,7 @@ DATASETS = {
     'po-ur': 'PO-UR truncated.pkl',
     'cocaine': 'cocaine truncated.pkl',
     'cyp1a2': 'CYP1A2 truncated.pkl',
-    'portionsize': 'portionsize truncated.pkl',
+    'portionsize': 'portionsize truncated.pkl.gz',
 }
 
 

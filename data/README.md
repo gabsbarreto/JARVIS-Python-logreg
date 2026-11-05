@@ -1,6 +1,6 @@
 # Data and provenance
 
-The pickle files are byte-for-byte copies of prepared local JARVIS datasets. They include publication text, screening and full-text labels, PICO responses, and sometimes author details or reviewer notes. Some also contain old SVD columns; the scripts discard those columns and rebuild TF-IDF directly from the abstracts.
+The pickle files are prepared local JARVIS datasets. The portion-size file is a gzip-compressed copy with its unused SVD columns removed; its remaining fields and record order are preserved. The other pickle files are byte-for-byte copies. They include publication text, screening and full-text labels, PICO responses, and sometimes author details or reviewer notes. Some also contain old SVD columns; the scripts discard those columns and rebuild TF-IDF directly from the abstracts.
 
 The two `antiacoag` files and the similarly named `anticoag` files are distinct prepared versions. The project preserves both names and does not assume their inputs are identical.
 
