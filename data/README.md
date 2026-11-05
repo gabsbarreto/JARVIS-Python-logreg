@@ -1,11 +1,19 @@
-# Data and provenance
+# Data
 
-The pickle files are gzip-compressed copies of prepared local JARVIS datasets. Unused SVD columns and the cocaine dataset's unused PCA columns have been removed; all other fields and record order are preserved. They include publication text, screening and full-text labels, PICO responses, and sometimes author details or reviewer notes. The scripts rebuild TF-IDF directly from the abstracts.
+This directory contains seven prepared, gzip-compressed datasets and the `smart.txt` stopword list used by the TF-IDF pipeline. Each dataset includes abstracts, screening and full-text decisions, R/P/I/C/O/S responses and the total score used for initial sampling.
 
-The `anticoag` and `anticoag2` files represent different datasets.
+| Dataset | Records |
+| --- | ---: |
+| Hypertension | 7,452 |
+| Anticoag | 1,632 |
+| Anticoag2 | 2,420 |
+| PO-UR | 2,045 |
+| Cocaine | 1,901 |
+| CYP1A2 | 807 |
+| Portion size | 46,494 |
 
-The provenance and redistribution terms for each prepared dataset and `smart.txt` have not been established here. The repository's MIT software licence does not establish rights to redistribute third-party datasets, publication abstracts, notes, or the stopword file. Verify ownership, consent where relevant, and applicable terms before making those files public.
+The files were prepared using pandas 3.x. Python and pandas versions can affect pickle compatibility. **Only load pickle files from trusted sources:** a malicious pickle can execute code.
 
-The files were produced with a pandas 3.x environment. Pickle compatibility can depend on the pandas and Python versions used. **Only open pickle files from a trusted source:** loading a malicious pickle can execute code.
+The datasets include publication text and may contain author details or reviewer notes. Their provenance and reuse terms, and those of `smart.txt`, have not been established in this project. The MIT software licence does not establish rights to reuse or redistribute third-party content; check the applicable permissions before doing so.
 
-From the project root, check the copied files with `shasum -a 256 -c data/SHA256SUMS` on macOS, or `sha256sum -c data/SHA256SUMS` on Linux.
+From the project root, verify the files with `shasum -a 256 -c data/SHA256SUMS` on macOS, or `sha256sum -c data/SHA256SUMS` on Linux.

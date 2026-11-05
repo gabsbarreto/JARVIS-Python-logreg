@@ -1,26 +1,22 @@
 # JARVIS-Python-logreg
 
-Retrospective systematic-review screening simulations using TF-IDF, R/P/I/C/O/S responses and an ensemble of three logistic-regression models. Each script validates one prepared dataset at a time.
+JARVIS-Python-logreg evaluates a machine-assisted screening workflow for systematic reviews. It combines abstract-based TF-IDF features and R/P/I/C/O/S responses with an ensemble of three logistic-regression models. The project compares a fixed class-weighting approach with an adaptive approach that gives additional weight to missed Includes.
 
-## Project layout
+The included scripts run retrospective simulations on one labelled dataset at a time. They report recall, specificity and estimated screening savings using known full-text decisions; they are not a live screening application.
 
-```text
-data/                 Prepared pickle datasets, stopwords and checksums
-scripts/
-  validate_normal.py  Fixed Include/Exclude weights
-  validate_adaptive.py Outcome-dependent weights
-  common.py           Shared preprocessing and screening workflow
-tests/                Small, data-independent checks
-results/              Generated for each run (not tracked by Git)
+## Getting started
+
+The datasets are stored with [Git LFS](https://git-lfs.com/). Install Git LFS before cloning, then run:
+
+```bash
+git lfs install
+git clone https://github.com/gabsbarreto/JARVIS-Python-logreg.git
+cd JARVIS-Python-logreg
 ```
 
-The datasets are pre-labelled validation data, not a live screening application. The scripts require `abstract`, `R`, `P`, `I`, `C`, `O`, `S`, `totalscore`, `screening` and `FTscreening` in each trusted pickle. The datasets are compressed with gzip; unused SVD columns, and the cocaine dataset's unused PCA columns, have been removed. The scripts process the abstracts directly. See [data/README.md](data/README.md) for data provenance and reuse information.
+If the dataset files contain LFS pointers after cloning, run `git lfs pull` in the project folder.
 
-## Set up Python
-
-The scripts were tested with **Python 3.12.16** and the versions in `requirements.txt`. The prepared files were created using pandas 3.x and may not load in an older environment.
-
-For a new environment on macOS or Linux, from the project folder:
+The scripts were tested with Python 3.12.16 and the package versions in `requirements.txt`. The prepared pickles use pandas 3.x and may not load in older environments. For a new environment on macOS or Linux:
 
 ```bash
 python3.12 -m venv .venv
@@ -28,11 +24,18 @@ source .venv/bin/activate
 python -m pip install -r requirements.txt
 ```
 
-On Windows, activate the environment with `.venv\Scripts\activate` instead. Install Spyder separately if you want its editor and plot pane, and configure Spyder to use the Python interpreter containing the requirements.
+On Windows, activate the environment with `.venv\Scripts\activate` instead.
 
-## Run one dataset
+## Running a validation
 
-In **Spyder**, open either `scripts/validate_normal.py` or `scripts/validate_adaptive.py`, change the `DATASET` setting near the top, and run the whole file. Plots are displayed during screening. In Spyder's IPython console preferences, choose the desired graphics backend if you prefer plots inline or in separate windows.
+Choose one of the two scripts:
+
+| Script | Training weights |
+| --- | --- |
+| `scripts/validate_normal.py` | Reviewed Includes: 2; reviewed Excludes: 1 |
+| `scripts/validate_adaptive.py` | Weights depend on held-out predictions initially and on prediction outcomes in subsequent rounds |
+
+In **Spyder**, set the interpreter to the environment containing the requirements, open the chosen script, change `DATASET` near the top if needed, and run the whole file. Plots are enabled by default. Spyder's graphics preferences control whether plots appear inline or in separate windows.
 
 From a terminal in the project folder:
 
@@ -41,25 +44,23 @@ python scripts/validate_normal.py --dataset anticoag2
 python scripts/validate_adaptive.py --dataset anticoag2
 ```
 
-For a non-interactive run, add `--no-plots`. For a short trial, add `--max-rounds 3`. Use `--c 0.5` to set logistic-regression C, or `--help` to see the options.
+Available dataset names are `hypertension`, `anticoag`, `anticoag2`, `po-ur`, `cocaine`, `cyp1a2` and `portionsize`. The default is `portionsize`. Add `--no-plots` to suppress figures, `--max-rounds 3` for a short run, or `--c 0.5` to set the regularization parameter. Run either script with `--help` to see its options.
 
-The default dataset is `portionsize`. Dataset choices are `hypertension`, `anticoag2`, `anticoag`, `po-ur`, `cocaine`, `cyp1a2` and `portionsize`. The `anticoag` and `anticoag2` files represent different datasets.
+## How the workflow works
 
-## How screening works
+1. **Prepare features.** The scripts clean the abstracts and calculate TF-IDF using unigrams to trigrams, a maximum of 20,000 terms and `min_df=0.07`. Each TF-IDF feature is scaled to 0–1, then combined with dummy variables for the R/P/I/C/O/S answers. TF-IDF and scaling are fitted to all abstracts without labels; this is a transductive simulation in which the full set of review texts is available before screening.
+2. **Select the initial records.** The workflow selects up to 15 records from the highest `totalscore` values, 10 from records scoring at most 2.5, and 5 from the bottom. Duplicate record IDs are removed.
+3. **Fit and combine models.** Reviewed Includes and sampled Excludes are arranged in three balanced groups. Each logistic model trains on two groups, and their predicted Include probabilities are averaged. When Includes are scarce, the fallback reuses them across groups. If either class is entirely absent, the simulation stops rather than fitting a two-class model.
+4. **Select the next records.** The workflow selects the 15 highest predictions, five nearest above the threshold and 10 nearest at or below it. If either threshold group is too small, it selects the top 30 instead. Overlap can result in fewer than 30 unique records.
+5. **Stop screening.** The default threshold is 0.4 and the maximum is 70 rounds. The simulation stops early when the remaining number predicted Include at `>= 0.4` is at most the greater of 30 or 1% of the dataset. The classification rule uses `> 0.4`.
 
-1. Clean abstracts; create word and phrase TF-IDF with `ngram_range=(1, 3)`, `max_features=20000` and `min_df=0.07`; then min-max scale each TF-IDF feature to 0–1. TF-IDF and scaling are fitted once to all review abstracts, without screening labels. This is a **transductive** simulation: the whole review's text is available during preprocessing.
-2. Combine TF-IDF with dummy variables for the six R/P/I/C/O/S responses. Start with up to 15 records from the top of `totalscore`, 10 from the score-at-most-2.5 group, and 5 from the bottom, removing duplicate IDs.
-3. Fit three weighted logistic models on balanced resampled groups. Each model trains on two of the three groups; their Include probabilities are averaged. When there are too few Includes, the existing fallback reuses them across groups. If either class is entirely absent, the script stops with an error rather than fitting a two-class model.
-4. Following rounds prioritize 15 highest predicted records, 5 nearest above the 0.4 threshold, and 10 nearest at or below it. If either threshold group is too small, the top 30 are selected. Groups can overlap, so fewer than 30 unique records can be added.
-5. Stop when the number of remaining records predicted Include at `>= 0.4` is at most the greater of 30 or 1% of the dataset, or after 70 rounds. Screening predictions use `> 0.4`. Settings including C, weights and TF-IDF limits are at the top of `scripts/common.py`.
+The default model settings are C = 0.5, `MAX_ITER = 100` and seed 123. TF-IDF, model and outcome-weight settings can be changed near the top of `scripts/common.py`.
 
-### Normal and adaptive weights
+### Adaptive weights
 
-The normal script assigns **2 to every reviewed Include** and **1 to every reviewed Exclude**.
+For initially reviewed records, the adaptive script uses record-disjoint held-out predictions. If `p` is a record's held-out Include probability, the weight is `1 + (1 - p)` for an Include and `1 + p` for an Exclude. Three folds are used when each class has at least three distinct records, two folds when each has at least two, and weight 1 for all initial records otherwise. These predictions are used to set training weights, not to evaluate the final model independently.
 
-For the adaptive script, initial records get weights from held-out predictions: `1 + (1 - p)` for an Include, and `1 + p` for an Exclude, where `p` is the held-out Include probability. It uses three record-disjoint validation folds when each class has at least three distinct examples, two folds when each has at least two, and weight 1 for every initial record otherwise. These held-out predictions set training weights; they are not an independent evaluation of the final model.
-
-After review, adaptive weights use the model's prediction made **before** the record was reviewed and the human screening label:
+For later records, the script compares the ensemble's prediction made before review with the screening decision:
 
 | Outcome | Weight |
 | --- | ---: |
@@ -68,26 +69,37 @@ After review, adaptive weights use the model's prediction made **before** the re
 | False Include | 0.75 |
 | False Exclude | 5 |
 
-Weights are absolute; they do not multiply the normal script's Include weight of 2. Full-text labels do not set model training weights.
+These are absolute training weights, not multipliers on the fixed class weights. Full-text decisions do not determine model training weights.
 
-## Outputs and interpretation
+## Results
 
-Each run creates a uniquely named folder under `results/` containing `settings.json`, `round_metrics.csv`, `run_info.json`, and, for the adaptive script, `initial_validation.csv`. The console prints its path. The CSV is updated each round; plots are shown when enabled. `results/` is excluded from Git by `.gitignore`.
+Each run creates a uniquely named directory under `results/`. The console prints its location. The directory contains:
 
-Recall and savings are **retrospective estimates** using the supplied `FTscreening` labels. Recall credits reviewed relevant records as found and assumes remaining records predicted Include will be reviewed. Estimated time savings are the proportion of all records that are full-text Excludes predicted Exclude while still unreviewed; actual screening time is not measured. These results cannot establish recall for a live review whose labels are unknown.
+- `round_metrics.csv`: recall, specificity, estimated time savings and counts for each round.
+- `settings.json`: the settings used for the run.
+- `run_info.json`: the stopping reason, number of completed rounds and feature counts.
+- `initial_validation.csv`: the initial held-out predictions and weights for adaptive runs.
 
-## Tests
+Recall and savings are retrospective estimates. Recall credits reviewed relevant records as found and assumes remaining records predicted Include will be reviewed. Estimated time savings are the proportion of all records that are full-text Excludes predicted Exclude while still unreviewed; actual screening time is not measured. Specificity is calculated for the remaining unreviewed full-text Excludes. These figures do not establish recall in a live review where labels are unknown.
 
-From the project folder, run:
+## Files and tests
+
+```text
+data/                   Prepared datasets, stopwords and checksums
+scripts/                Validation scripts and shared workflow
+tests/                  Data-independent checks
+results/                Generated run outputs (not tracked by Git)
+requirements.txt        Tested Python dependencies
+```
+
+Run the tests from the project folder:
 
 ```bash
 python -m unittest discover -s tests
 ```
 
-## GitHub and large datasets
+## Data and licence
 
-The compressed portion-size pickle is approximately 27 MiB; its original uncompressed file was approximately 275 MiB. All seven prepared datasets are now compressed. `.gitattributes` configures both `data/*.pkl` and `data/*.pkl.gz` for Git LFS. Install Git LFS and run `git lfs install` **before staging or committing** the pickle files. Existing Git history still references the earlier uncompressed LFS files. See [GitHub's large-file guide](https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-large-files-on-github) and [Git LFS installation](https://docs.github.com/en/repositories/working-with-files/managing-large-files/installing-git-large-file-storage).
+Each trusted dataset pickle must contain `abstract`, `R`, `P`, `I`, `C`, `O`, `S`, `totalscore`, `screening` and `FTscreening`. See [data/README.md](data/README.md) for the dataset details and checksum instructions. Only load pickle files from trusted sources: a malicious pickle can execute code.
 
-The repository is [gabsbarreto/JARVIS-Python-logreg](https://github.com/gabsbarreto/JARVIS-Python-logreg). To download the project and datasets, install and initialize Git LFS before cloning. If a clone contains LFS pointers instead of datasets, run `git lfs pull` inside the checkout. Use Git or GitHub Desktop to stage, commit and push future changes.
-
-Verify the datasets' and stopwords' redistribution rights before uploading them to that public repository. The MIT licence covers the project code and documentation; the data and stopword file need their own terms.
+The project code is available under the [MIT License](LICENSE). The datasets and `smart.txt` have separate, unverified reuse terms; the software licence does not establish rights to redistribute them. Check the applicable data and stopword permissions before sharing.
