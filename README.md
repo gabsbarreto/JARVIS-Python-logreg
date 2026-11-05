@@ -14,7 +14,7 @@ tests/                Small, data-independent checks
 results/              Generated for each run (not tracked by Git)
 ```
 
-The datasets are pre-labelled validation data, not a live screening application. The scripts require `abstract`, `R`, `P`, `I`, `C`, `O`, `S`, `totalscore`, `screening` and `FTscreening` in each trusted pickle. The portion-size dataset is compressed with gzip and has its unused SVD columns removed; SVD columns in the other datasets are ignored. The scripts process the abstracts directly. See [data/README.md](data/README.md) for data provenance and reuse information.
+The datasets are pre-labelled validation data, not a live screening application. The scripts require `abstract`, `R`, `P`, `I`, `C`, `O`, `S`, `totalscore`, `screening` and `FTscreening` in each trusted pickle. The datasets are compressed with gzip; unused SVD columns, and the cocaine dataset's unused PCA columns, have been removed. The scripts process the abstracts directly. See [data/README.md](data/README.md) for data provenance and reuse information.
 
 ## Set up Python
 
@@ -86,7 +86,7 @@ python -m unittest discover -s tests
 
 ## GitHub and large datasets
 
-The compressed portion-size pickle is approximately 27 MiB; its original uncompressed file was approximately 275 MiB. `.gitattributes` configures both `data/*.pkl` and `data/*.pkl.gz` for Git LFS. Install Git LFS and run `git lfs install` **before staging or committing** the pickle files. Existing Git history may still reference the earlier large LFS file. See [GitHub's large-file guide](https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-large-files-on-github) and [Git LFS installation](https://docs.github.com/en/repositories/working-with-files/managing-large-files/installing-git-large-file-storage).
+The compressed portion-size pickle is approximately 27 MiB; its original uncompressed file was approximately 275 MiB. All nine prepared datasets are now compressed. `.gitattributes` configures both `data/*.pkl` and `data/*.pkl.gz` for Git LFS. Install Git LFS and run `git lfs install` **before staging or committing** the pickle files. Existing Git history still references the earlier uncompressed LFS files. See [GitHub's large-file guide](https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-large-files-on-github) and [Git LFS installation](https://docs.github.com/en/repositories/working-with-files/managing-large-files/installing-git-large-file-storage).
 
 The repository is [gabsbarreto/JARVIS-Python-logreg](https://github.com/gabsbarreto/JARVIS-Python-logreg). To download the project and datasets, install and initialize Git LFS before cloning. If a clone contains LFS pointers instead of datasets, run `git lfs pull` inside the checkout. Use Git or GitHub Desktop to stage, commit and push future changes.
 
