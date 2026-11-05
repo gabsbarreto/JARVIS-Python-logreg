@@ -43,7 +43,7 @@ python scripts/validate_adaptive.py --dataset anticoag2
 
 For a non-interactive run, add `--no-plots`. For a short trial, add `--max-rounds 3`. Use `--c 0.5` to set logistic-regression C, or `--help` to see the options.
 
-The default dataset is `portionsize`. Dataset choices are `hypertension`, `anticoag2`, `anticoag`, `po-ur`, `cocaine`, `cyp1a2`, `portionsize`, `antiacoag` and `antiacoag2`. The `antiacoag` spellings are separate prepared cache files, not assumptions that the files are interchangeable.
+The default dataset is `portionsize`. Dataset choices are `hypertension`, `anticoag2`, `anticoag`, `po-ur`, `cocaine`, `cyp1a2` and `portionsize`. The `anticoag` and `anticoag2` files represent different datasets.
 
 ## How screening works
 
@@ -86,7 +86,7 @@ python -m unittest discover -s tests
 
 ## GitHub and large datasets
 
-The compressed portion-size pickle is approximately 27 MiB; its original uncompressed file was approximately 275 MiB. All nine prepared datasets are now compressed. `.gitattributes` configures both `data/*.pkl` and `data/*.pkl.gz` for Git LFS. Install Git LFS and run `git lfs install` **before staging or committing** the pickle files. Existing Git history still references the earlier uncompressed LFS files. See [GitHub's large-file guide](https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-large-files-on-github) and [Git LFS installation](https://docs.github.com/en/repositories/working-with-files/managing-large-files/installing-git-large-file-storage).
+The compressed portion-size pickle is approximately 27 MiB; its original uncompressed file was approximately 275 MiB. All seven prepared datasets are now compressed. `.gitattributes` configures both `data/*.pkl` and `data/*.pkl.gz` for Git LFS. Install Git LFS and run `git lfs install` **before staging or committing** the pickle files. Existing Git history still references the earlier uncompressed LFS files. See [GitHub's large-file guide](https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-large-files-on-github) and [Git LFS installation](https://docs.github.com/en/repositories/working-with-files/managing-large-files/installing-git-large-file-storage).
 
 The repository is [gabsbarreto/JARVIS-Python-logreg](https://github.com/gabsbarreto/JARVIS-Python-logreg). To download the project and datasets, install and initialize Git LFS before cloning. If a clone contains LFS pointers instead of datasets, run `git lfs pull` inside the checkout. Use Git or GitHub Desktop to stage, commit and push future changes.
 

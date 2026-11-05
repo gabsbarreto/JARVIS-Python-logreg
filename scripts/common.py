@@ -406,8 +406,6 @@ DATASETS = {
     'hypertension': 'hypertension truncated.pkl.gz',
     'anticoag2': 'anticoag2 truncated.pkl.gz',
     'anticoag': 'anticoag truncated.pkl.gz',
-    'antiacoag': 'antiacoag truncated.pkl.gz',
-    'antiacoag2': 'antiacoag2 truncated.pkl.gz',
     'po-ur': 'PO-UR truncated.pkl.gz',
     'cocaine': 'cocaine truncated.pkl.gz',
     'cyp1a2': 'CYP1A2 truncated.pkl.gz',
